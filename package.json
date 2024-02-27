@@ -15,5 +15,9 @@
   "bugs": {
     "url": "https://github.com/robertjhull/nuxt-cms-functions/issues"
   },
-  "homepage": "https://github.com/robertjhull/nuxt-cms-functions#readme"
+  "homepage": "https://github.com/robertjhull/nuxt-cms-functions#readme",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "mongoose": "^8.2.0"
+  }
 }
