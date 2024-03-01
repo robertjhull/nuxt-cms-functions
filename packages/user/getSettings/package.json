@@ -1,7 +1,7 @@
 {
   "name": "user",
   "version": "1.0.0",
-  "main": "getDashboard.js",
+  "main": "getSettings.js",
   "dependencies": {
     "dotenv": "^16.4.5",
     "mongodb": "^6.4.0"

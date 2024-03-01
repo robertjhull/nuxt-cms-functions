@@ -6,25 +6,20 @@ async function main(args) {
   try {
     await client.connect();
     const database = client.db(process.env.MONGODB_NAME);
-    const usersCollection = database.collection("users");
     const postsCollection = database.collection("posts");
     const commentsCollection = database.collection("comments");
+    const usersCollection = database.collection("users");
 
     let userId = args.userId;
     if (!userId) {
       return { body: "No user ID provided" };
     }
 
-    const user = await usersCollection.findOne({ _id: new ObjectId(userId) });
-    if (!user) {
-      return { body: "User not found", statusCode: 404 };
-    }
+    // TODO: handle single preview
 
-    const posts = await postsCollection
-      .find({ user: new ObjectId(userId) })
-      .sort({ created: -1 })
-      .limit(3)
-      .toArray();
+    const posts = await postsCollection.findMany({
+      author: new ObjectId(userId),
+    });
 
     for (let post of posts) {
       const comments = await commentsCollection
@@ -44,9 +39,7 @@ async function main(args) {
       post.comments = comments;
     }
 
-    user.posts = posts;
-
-    return { body: user, statusCode: 200 };
+    return { body: posts, statusCode: 200 };
   } catch (error) {
     console.error("Error fetching user data:", error);
     return {

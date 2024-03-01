@@ -1,9 +1,34 @@
 environment:
   MONGODB_URI: "${MONGODB_URI}"
+  MONGODB_NAME: "${MONGODB_NAME}"
 packages:
   - name: user
     functions:
       - name: getDashboard
+        binary: false
+        runtime: nodejs:18
+        web: true
+        webSecure: false
+      - name: getSettings
+        binary: false
+        runtime: nodejs:18
+        web: true
+        webSecure: false
+      - name: updateSettings
+        binary: false
+        runtime: nodejs:18
+        web: true
+        webSecure: false
+  - name: post
+    functions:
+      - name: getPreview
+        binary: false
+        runtime: nodejs:18
+        web: true
+        webSecure: false
+  - name: comment
+    functions:
+      - name: updateStatus
         binary: false
         runtime: nodejs:18
         web: true
