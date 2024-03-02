@@ -38,7 +38,7 @@ async function main(args) {
           { _id: new ObjectId(comment.user) },
           { projection: { name: 1 } }
         );
-        comment.userName = commentUser ? commentUser.name : "Unknown";
+        comment.author = { name: commentUser ? commentUser.name : "Unknown" };
       }
 
       post.comments = comments;
