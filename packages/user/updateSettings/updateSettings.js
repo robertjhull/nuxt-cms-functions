@@ -1,4 +1,4 @@
-const { MongoClient } = require("mongodb");
+const { MongoClient, ObjectId } = require("mongodb");
 
 async function main(args) {
   const client = new MongoClient(process.env.MONGODB_URI);
@@ -6,25 +6,36 @@ async function main(args) {
   try {
     await client.connect();
     const database = client.db(process.env.MONGODB_NAME);
-    const usersCollection = database.collection("users");
 
     let userId = args.userId;
     if (!userId) {
       return { body: "No user ID provided" };
     }
 
-    const user = await usersCollection.findOne({ _id: new ObjectId(userId) });
-    if (!user) {
-      return { body: "User not found", statusCode: 404 };
+    const userQuery = { _id: new ObjectId(userId) };
+    const newSettings = {
+      $set: {
+        fontFamily: args.fontFamily,
+        fontSize: args.fontSize,
+        pageColor: args.pageColor,
+        pageTitle: args.pageTitle,
+        textColor: args.textColor,
+      },
+    };
+
+    const result = await database
+      .collection("users")
+      .updateOne(userQuery, newSettings);
+
+    if (result.modifiedCount === 0) {
+      return { body: "User settings not updated", statusCode: 400 };
     }
 
-    // TODO: update user settings
-
-    return { body: true, statusCode: 200 };
+    return { body: JSON.stringify(true), statusCode: 200 };
   } catch (error) {
-    console.error("Error fetching user data:", error);
+    console.error("Error updating user settings:", error);
     return {
-      body: `Error fetching user data: ${error.message}`,
+      body: `Error updating user settings: ${error.message}`,
       statusCode: 500,
     };
   } finally {

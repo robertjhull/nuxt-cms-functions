@@ -1,4 +1,4 @@
-const { MongoClient } = require("mongodb");
+const { MongoClient, ObjectId } = require("mongodb");
 
 async function main(args) {
   const client = new MongoClient(process.env.MONGODB_URI);
@@ -6,34 +6,36 @@ async function main(args) {
   try {
     await client.connect();
     const database = client.db(process.env.MONGODB_NAME);
-    const postsCollection = database.collection("posts");
-    const commentsCollection = database.collection("comments");
-    const usersCollection = database.collection("users");
 
     let userId = args.userId;
     if (!userId) {
       return { body: "No user ID provided" };
     }
 
-    // TODO: handle single preview
+    let postId = args.postId;
 
-    const posts = await postsCollection.findMany({
+    const postFilter = {
       author: new ObjectId(userId),
-    });
+      ...(postId && { _id: new ObjectId(postId) }),
+    };
+
+    const posts = await database.collection("posts").find(postFilter).toArray();
 
     for (let post of posts) {
-      const comments = await commentsCollection
+      const comments = await database
+        .collection("comments")
         .find({ post: post._id })
         .sort({ created: -1 })
-        .limit(3)
         .toArray();
 
       for (let comment of comments) {
-        const commentUser = await usersCollection.findOne(
-          { _id: new ObjectId(comment.user) },
-          { projection: { name: 1 } }
-        );
-        comment.userName = commentUser ? commentUser.name : "Unknown";
+        const commentUser = await database
+          .collection("users")
+          .find(
+            { _id: new ObjectId(comment.author) },
+            { projection: { name: 1 } }
+          );
+        comment.author = { name: commentUser ? commentUser.name : "Unknown" };
       }
 
       post.comments = comments;
@@ -41,9 +43,9 @@ async function main(args) {
 
     return { body: posts, statusCode: 200 };
   } catch (error) {
-    console.error("Error fetching user data:", error);
+    console.error("Error fetching post data:", error);
     return {
-      body: `Error fetching user data: ${error.message}`,
+      body: `Error fetching post data: ${error.message}`,
       statusCode: 500,
     };
   } finally {

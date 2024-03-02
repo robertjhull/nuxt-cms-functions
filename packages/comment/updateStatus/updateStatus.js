@@ -1,4 +1,4 @@
-const { MongoClient } = require("mongodb");
+const { MongoClient, ObjectId } = require("mongodb");
 
 async function main(args) {
   const client = new MongoClient(process.env.MONGODB_URI);
@@ -6,28 +6,28 @@ async function main(args) {
   try {
     await client.connect();
     const database = client.db(process.env.MONGODB_NAME);
-    const commentsCollection = database.collection("comments");
 
-    let userId = args.userId;
-    if (!userId) {
-      return { body: "No user ID provided" };
+    let commentId = args.commentId;
+    if (!commentId) {
+      return { body: "No comment ID provided" };
     }
 
-    const comment = await commentsCollection.findOne({
-      _id: new ObjectId(userId),
-    });
-    if (!comment) {
-      return { body: "Comment not found", statusCode: 404 };
+    const commentQuery = { _id: new ObjectId(commentId) };
+    const newStatus = { $set: { status: args.status } };
+
+    const result = await database
+      .collection("comments")
+      .updateOne(commentQuery, newStatus);
+
+    if (result.modifiedCount === 0) {
+      return { body: "Comment not updated", statusCode: 400 };
     }
 
-    comment.status = args.status;
-    // save
-
-    return { body: true, statusCode: 200 };
+    return { body: JSON.stringify(true), statusCode: 200 };
   } catch (error) {
-    console.error("Error fetching user data:", error);
+    console.error("Error updating comment status:", error);
     return {
-      body: `Error fetching user data: ${error.message}`,
+      body: `Error updating comment status: ${error.message}`,
       statusCode: 500,
     };
   } finally {
