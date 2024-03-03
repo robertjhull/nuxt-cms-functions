@@ -33,3 +33,8 @@ packages:
         runtime: nodejs:18
         web: true
         webSecure: false
+      - name: getAll
+        binary: false
+        runtime: nodejs:18
+        web: true
+        webSecure: false

@@ -23,15 +23,9 @@ async function main(args) {
       },
     };
 
-    const result = await database
-      .collection("users")
-      .updateOne(userQuery, newSettings);
+    await database.collection("users").updateOne(userQuery, newSettings);
 
-    if (result.modifiedCount === 0) {
-      return { body: "User settings not updated", statusCode: 400 };
-    }
-
-    return { body: JSON.stringify(true), statusCode: 200 };
+    return { statusCode: 200 };
   } catch (error) {
     console.error("Error updating user settings:", error);
     return {

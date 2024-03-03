@@ -20,13 +20,18 @@ async function main(args) {
       return { body: "User not found", statusCode: 404 };
     }
 
+    user.posts = [];
+    user.comments = [];
+
     const posts = await postsCollection
-      .find({ user: new ObjectId(userId) })
+      .find({ author: new ObjectId(userId) })
       .sort({ created: -1 })
       .limit(3)
       .toArray();
 
     for (let post of posts) {
+      post.authorName = user.name;
+
       const comments = await commentsCollection
         .find({ post: post._id })
         .sort({ created: -1 })
@@ -35,16 +40,17 @@ async function main(args) {
 
       for (let comment of comments) {
         const commentUser = await usersCollection.findOne(
-          { _id: new ObjectId(comment.user) },
+          { _id: new ObjectId(comment.author) },
           { projection: { name: 1 } }
         );
-        comment.author = { name: commentUser ? commentUser.name : "Unknown" };
+        comment.authorName = commentUser ? commentUser.name : "Unknown";
+        comment.postTitle = post.title;
+        user.comments.push(comment);
       }
 
       post.comments = comments;
+      user.posts.push(post);
     }
-
-    user.posts = posts;
 
     return { body: user, statusCode: 200 };
   } catch (error) {
