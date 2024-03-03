@@ -24,7 +24,7 @@ async function main(args) {
     for (let post of posts) {
       const comments = await database
         .collection("comments")
-        .find({ post: post._id })
+        .find({ post: post._id, status: "approved" })
         .sort({ created: -1 })
         .toArray();
 
@@ -36,6 +36,22 @@ async function main(args) {
             { projection: { name: 1 } }
           );
         comment.author = { name: commentUser ? commentUser.name : "Unknown" };
+
+        comment.replies = await database
+          .collection("comments")
+          .find({ parentCommentId: comment._id, status: "approved" })
+          .sort({ created: -1 })
+          .toArray();
+
+        for (let reply of comment.replies) {
+          const replyUser = await database
+            .collection("users")
+            .find(
+              { _id: new ObjectId(reply.author) },
+              { projection: { name: 1 } }
+            );
+          comment.author = { name: replyUser ? replyUser.name : "Unknown" };
+        }
       }
 
       post.comments = comments;
