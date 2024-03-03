@@ -31,11 +31,11 @@ async function main(args) {
       for (let comment of comments) {
         const commentUser = await database
           .collection("users")
-          .find(
+          .findOne(
             { _id: new ObjectId(comment.author) },
             { projection: { name: 1 } }
           );
-        comment.author = { name: commentUser ? commentUser.name : "Unknown" };
+        comment.authorName = commentUser ? commentUser.name : "Unknown";
 
         comment.replies = await database
           .collection("comments")
@@ -46,15 +46,22 @@ async function main(args) {
         for (let reply of comment.replies) {
           const replyUser = await database
             .collection("users")
-            .find(
+            .findOne(
               { _id: new ObjectId(reply.author) },
               { projection: { name: 1 } }
             );
-          comment.author = { name: replyUser ? replyUser.name : "Unknown" };
+          reply.authorName = replyUser ? replyUser.name : "Unknown";
         }
       }
 
       post.comments = comments;
+      const postUser = await database
+        .collection("users")
+        .findOne(
+          { _id: new ObjectId(post.author) },
+          { projection: { name: 1 } }
+        );
+      post.authorName = postUser ? postUser.name : "Unknown";
     }
 
     return { body: posts, statusCode: 200 };
