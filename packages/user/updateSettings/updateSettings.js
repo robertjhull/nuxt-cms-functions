@@ -12,20 +12,21 @@ async function main(args) {
       return { body: "No user ID provided" };
     }
 
-    const userQuery = { _id: new ObjectId(userId) };
     const newSettings = {
       $set: {
-        fontFamily: args.fontFamily,
-        fontSize: args.fontSize,
-        pageColor: args.pageColor,
-        pageTitle: args.pageTitle,
-        textColor: args.textColor,
+        "settings.fontFamily": args.fontFamily,
+        "settings.fontSize": args.fontSize,
+        "settings.pageColor": args.pageColor,
+        "settings.pageTitle": args.pageTitle,
+        "settings.textColor": args.textColor,
       },
     };
 
-    await database.collection("users").updateOne(userQuery, newSettings);
+    await database
+      .collection("users")
+      .updateOne({ _id: new ObjectId(userId) }, newSettings);
 
-    return { statusCode: 200 };
+    return { body: JSON.stringify(true), statusCode: 200 };
   } catch (error) {
     console.error("Error updating user settings:", error);
     return {
