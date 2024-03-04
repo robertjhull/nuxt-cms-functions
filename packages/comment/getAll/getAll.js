@@ -20,6 +20,14 @@ async function main(args) {
           { projection: { name: 1 } }
         );
       comment.authorName = commentUser ? commentUser.name : "Unknown";
+
+      const commentPost = await database
+        .collection("posts")
+        .findOne(
+          { _id: new ObjectId(comment.post) },
+          { projection: { title: 1 } }
+        );
+      comment.postTitle = commentPost ? commentPost.title : "Unknown";
     }
 
     return { body: comments, statusCode: 200 };
